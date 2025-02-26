@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const Task = require("./tasks")
 
 
 const userSchema = new mongoose.Schema({
@@ -90,14 +91,25 @@ userSchema.methods.toJSON = function() {
 
 
 userSchema.pre('save', async function(next) {
-    const user = this
-    if (user.isModified('password')) {
-        user.password = await bcrypt.hash(user.password, 8)
+        const user = this
+        if (user.isModified('password')) {
+            user.password = await bcrypt.hash(user.password, 8)
+        }
+        next()
+    })
+    //delete the tasks belongs to user after user delete the profile
+userSchema.pre('deleteOne', { document: true, query: false }, async function(next) {
+    const user = this;
+
+    try {
+        // Delete all tasks that belong to the user
+        await Task.deleteMany({ owner: user._id });
+        next();
+    } catch (error) {
+        console.error("Error deleting user tasks:", error.message); // Log the error for debugging
+        next(error); // Pass the error to the next middleware
     }
-    next()
-})
-
-
+});
 
 const User = mongoose.model('User', userSchema)
 

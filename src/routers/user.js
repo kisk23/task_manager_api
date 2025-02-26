@@ -89,17 +89,16 @@ router.patch("/users/me", auth, async(req, res) => {
 
 router.delete("/users/me", auth, async(req, res) => {
     try {
+        // Ensure req.user is defined
+        if (!req.user) { console.log("aloo") };
+
+
         // Delete the authenticated user
-        const user = await User.findByIdAndDelete(req.user._id);
+        await req.user.deleteOne();
 
-        if (!user) {
-            return res.status(404).send({ error: "User not found" });
-        }
 
-        // Alternatively, you can use req.user.remove()
-        // await req.user.remove();
-
-        res.send(user); // Send the deleted user as the response
+        // Send the deleted user as the response
+        res.send(req.user);
     } catch (e) {
         console.error("Delete user error:", e.message); // Log the error for debugging
         res.status(500).send({ error: "Internal server error" });
