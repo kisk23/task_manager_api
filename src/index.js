@@ -19,28 +19,28 @@ app.listen(port, () => {
     console.log(`Example app listening on port ${ port } `)
 })
 
-const User = require("./models/users")
-const Task = require("./models/tasks")
+// const User = require("./models/users")
+// const Task = require("./models/tasks")
 
-const functi = async() => {
-    try {
-        // Find the user by ID
-        const user = await User.findById("67bf8eb3883c4684626dca32");
+// const functi = async() => {
+//     try {
+//         // Find the user by ID
+//         const user = await User.findById("67bf8eb3883c4684626dca32");
 
-        if (!user) {
-            console.log("User not found");
-            return;
-        }
+//         if (!user) {
+//             console.log("User not found");
+//             return;
+//         }
 
-        // Populate the 'tasks' field
-        await user.populate("tasks") // For Mongoose v5.x and earlier
-            // await user.populate("tasks"); // For Mongoose v6.x and later
+//         // Populate the 'tasks' field
+//         await user.populate("tasks") // For Mongoose v5.x and earlier
+//             // await user.populate("tasks"); // For Mongoose v6.x and later
 
-        // Log the populated tasks
-        console.log(user.tasks);
-    } catch (error) {
-        console.error("Error:", error.message);
-    }
-};
+//         // Log the populated tasks
+//         console.log(user.tasks);
+//     } catch (error) {
+//         console.error("Error:", error.message);
+//     }
+// };
 
-functi();
+// functi();
