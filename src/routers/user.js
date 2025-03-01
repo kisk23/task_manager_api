@@ -1,6 +1,8 @@
 const express = require('express')
 const User = require('../models/users')
+const sharp = require('sharp');
 const auth = require("../middleware/auth")
+const multer = require("multer")
 const router = new express.Router()
 
 
@@ -104,5 +106,82 @@ router.delete("/users/me", auth, async(req, res) => {
         res.status(500).send({ error: "Internal server error" });
     }
 });
+
+
+const upload = multer({
+
+    limits: {
+        fileSize: 1000000
+    },
+    fileFilter(req, file, cb) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+            return cb(new Error("only accepts pictures"))
+        }
+        cb(undefined, true)
+    }
+})
+
+
+router.post("/users/me/avatar", auth, upload.single("avatar"), async(req, res) => {
+
+        const buffer = await sharp(req.file.buffer)
+            .rotate()
+            .resize(200)
+            .png()
+            .toBuffer()
+
+
+        req.user.avatar = buffer
+        await req.user.save()
+        res.send(req.user)
+
+    },
+    (error, req, res, next) => {
+
+        // A Multer error occurred (e.g., file size limit exceeded)
+        return res.status(400).send({ message: error.message });
+
+
+
+    }
+
+
+)
+
+
+router.delete("/users/me/avatar", auth, async(req, res) => {
+    try {
+        // Ensure req.user is defined
+        if (!req.user) { console.log("aloo") };
+
+
+        // Delete the authenticated user
+        req.user.avatar = undefined
+        await req.user.save()
+
+
+        // Send the deleted user as the response
+        res.send(req.user);
+    } catch (e) {
+        console.error("Delete user error avatar:", e.message); // Log the error for debugging
+        res.status(500).send({ error: "Internal server error" });
+    }
+});
+router.get("/users/:id/avatar", async(req, res) => {
+    try {
+
+        const user = await User.findById(req.params.id)
+        if (!user || !user.avatar) {
+            throw new Error("can not find the user or pic")
+        }
+        res.set("content-Type", "image/png")
+        res.send(user.avatar)
+    } catch (error) {
+        res.status(404).send({ error: "Internal server error" });
+
+    }
+
+
+})
 
 module.exports = router
